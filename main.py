@@ -7,98 +7,191 @@ from selenium.webdriver.chrome.options import Options  # for suppressing the bro
 from selenium.webdriver.common.by import By
 import random
 from pygame import mixer  # Load the popular external library
+from time import strftime
+import tkinter as tk
+import pygame
+from threading import *
+from queue import Queue
 
-def webscript(boolean):
-    website = 'https://randomthingstodo.com/'
-    activities = ['talk', 'draw', 'paint', 'home', 'outside',
-                  'public', 'challenges', 'write', 'money', 'best', 'funniest']
-    activity = ""
-    rand_num = random.randint(1, 11)
+alarmH = 20
+alarmM = 11
 
-    # make restart a key input instead
-    restart = False
+def thread2(in_q):
+    
+    def set_clock():
+        clock.config(text = strftime("%H:%M:%S"))
+        clock.after(1000,set_clock)
 
-    if rand_num == 1:
 
-        website = website + activities[0]
-        activity = 'Things to Talk About'
+    def set_alarm_clock(hour, minute):
+        alarm_clocks.append({"hour":hour, "minute":minute})
+        active_alarm()
 
-    elif rand_num == 2:
+    def active_alarm():
+        alarm_clock = "{}:{}:00".format(alarm_clocks[0]["hour"],alarm_clocks[0]["minute"])
+        if alarm_clock == strftime("%H:%M:%S"):
+            alarm.config(text = alarm_clock)
+            pygame.mixer.music.load("osg_S_065.mp3")
+            pygame.mixer.music.play(loops = 2)
+            btn_stop_alarm.place(x = 325, y = 200)
+        btn_set_alarm.after(1000,active_alarm)
 
-        website = website + activities[1]
-        activity = 'Drawing Ideas'
+    def stop_alarm():
+        pygame.mixer.music.stop()
 
-    elif rand_num == 3:
+    def set_task(activity):
+        print(activity)
+        text_one = tk.Button(root, text = activity)
+        text_one.place(x = 200, y = 200)
 
-        website = website + activities[2]
-        activity = 'Painting Ideas'
+    #BACK
+    alarm_clocks = []
 
-    elif rand_num == 4:
+    print(datetime.datetime.now().hour , ":", datetime.datetime.now().minute)
+    root = tk.Tk()
 
-        website = website + activities[3]
-        activity = 'Things to Do at Home'
+    #FRONT
+    root.title("Alarmania")
+    root.geometry("500x250")
+    root.resizable(0,0)
+    root.config(bg = "black")
 
-    elif rand_num == 5:
+    #LABEL
+    clock = tk.Label(root, bg = "black", fg = "white", font = "arial 50 bold")
+    clock.pack()
+    set_clock()
 
-        website = website + activities[4]
-        activity = 'Things to Do Outside'
+    alarm = tk.Label(root, bg = "black", fg = "green", font = "arial 50 bold")
+    alarm.pack()
 
-    elif rand_num == 6:
+    #ENTRY
+    hour = tk.Entry(root, width = 2, bg = "black", fg = "green", font = "arial 30")
+    hour.place(x = 195, y = 135)
 
-        website = website + activities[5]
-        activity = 'Things to Do in Public'
+    minute = tk.Entry(root, width = 2, bg = "black", fg = "green", font = "arial 30")
+    minute.place(x = 255, y = 135)
 
-    elif rand_num == 7:
+    #BUTTON
+    btn_set_alarm = tk.Button(root, text = "Set Alarm", command = lambda: set_alarm_clock(hour.get(),minute.get()))
+    btn_set_alarm.place(x = 100, y = 200)
 
-        website = website + activities[6]
-        activity = 'Challenges'
+    btn_stop_alarm = tk.Button(root, text = "Stop Alarm", command = stop_alarm)
+    
+    minute = tk.Entry(root, width = 2, bg = "black", fg = "green", font = "arial 30")
+    minute.place(x = 255, y = 135)
 
-    elif rand_num == 8:
+    def loop():
+        if (q.empty() == False):        
+            activity = in_q.get()
+            set_task(activity)   
+        root.after(5, loop)
 
-        website = website + activities[7]
-        activity = 'Writing Prompts'
+    root.after(10, loop)
+    root.mainloop()
+ 
 
-    elif rand_num == 9:
-        website = website + activities[8]
-        activity = 'Ways to Make Money'
 
-    elif rand_num == 10:
+    
+def web_script(out_q):
 
-        website = website + activities[9]
-        activity = 'Best Things to Do'
+    def webscript(boolean):
 
-    elif rand_num == 11:
 
-        website = website + activities[10]
-        activity = 'Funniest Things to Do'
+        website = 'https://randomthingstodo.com/'
+        activities = ['talk', 'draw', 'paint', 'home', 'outside',
+                    'public', 'challenges', 'write', 'money', 'best', 'funniest']
+        activity = ""
+        rand_num = random.randint(1, 11)
 
-    option = webdriver.ChromeOptions()
-    option.add_argument('headless')
-    driver = webdriver.Chrome(
-        'chromedriver', options=option)
-    driver.get(website)
+        # make restart a key input instead
+        restart = False
 
-    name = driver.find_element(By.CLASS_NAME, "card-text").text
-    print("Activity: " + activity)
-    print("Task: " + name)
+        if rand_num == 1:
 
-    if boolean == True:
+            website = website + activities[0]
+            activity = 'Things to Talk About'
 
-        webscript(False)
-print(datetime.datetime.now().minute)
-if __name__ == "__main__":
+        elif rand_num == 2:
+
+            website = website + activities[1]
+            activity = 'Drawing Ideas'
+
+        elif rand_num == 3:
+
+            website = website + activities[2]
+            activity = 'Painting Ideas'
+
+        elif rand_num == 4:
+
+            website = website + activities[3]
+            activity = 'Things to Do at Home'
+
+        elif rand_num == 5:
+
+            website = website + activities[4]
+            activity = 'Things to Do Outside'
+
+        elif rand_num == 6:
+
+            website = website + activities[5]
+            activity = 'Things to Do in Public'
+
+        elif rand_num == 7:
+
+            website = website + activities[6]
+            activity = 'Challenges'
+
+        elif rand_num == 8:
+
+            website = website + activities[7]
+            activity = 'Writing Prompts'
+
+        elif rand_num == 9:
+            website = website + activities[8]
+            activity = 'Ways to Make Money'
+
+        elif rand_num == 10:
+
+            website = website + activities[9]
+            activity = 'Best Things to Do'
+
+        elif rand_num == 11:
+
+            website = website + activities[10]
+            activity = 'Funniest Things to Do'
+
+        option = webdriver.ChromeOptions()
+        option.add_argument('headless')
+
+        #change path according to directory of chromedriver
+        driver = webdriver.Chrome(
+            'chromedriver_win32/chromedriver', options=option)
+        driver.get(website)
+
+        name = driver.find_element(By.CLASS_NAME, "card-text").text
+
+        return activity + name
+        
+        
+
+        if boolean == True:
+
+            webscript(False)
+
     #make input nice display
-    alarmH = 11
-    alarmM = 5
-
+    pygame.mixer.init()
     mixer.init()
     mixer.music.load('stanley.mp3')
-    while(True):
-        count = 0
-        
-        #make nice input
 
+
+    #alarm_time = str(alarmH) + ":" + str(alarmM)
+
+    while(True):
+
+        count = 0
+        #make nice input
         restart = False
+        #print("waiting")
 
         if(alarmH == (datetime.datetime.now().hour) and
                 alarmM == (datetime.datetime.now().minute)):
@@ -106,14 +199,24 @@ if __name__ == "__main__":
             mixer.music.load('toby_sad_boy.mp3')
             mixer.music.play()
 
-            endTime = datetime.datetime.now() + datetime.timedelta(minutes=2)
+            endTime = datetime.datetime.now() + datetime.timedelta(minutes=1)
             
-            webscript(False)
-
+            out_q.put(webscript(False))
+            
             while True:
-
                 if datetime.datetime.now() >= endTime:
                     break
 
                 if restart == True:
                     webscript(False)
+
+
+q = Queue()
+t1=Thread(target=web_script, args = (q, ))
+t2=Thread(target=thread2, args = (q,))
+t1.start()
+t2.start()
+
+
+
+    
