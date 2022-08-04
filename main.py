@@ -13,36 +13,62 @@ import pygame
 from threading import *
 from queue import Queue
 
-alarmH = 20
-alarmM = 11
-
+alarmH = 5
+alarmM = 30
+CHAR_LEN = 46
+        
 def thread2(in_q):
     
     def set_clock():
-        clock.config(text = strftime("%H:%M:%S"))
+        clock.config(text = strftime("%H:%M:%S %p"))
         clock.after(1000,set_clock)
 
 
-    def set_alarm_clock(hour, minute):
-        alarm_clocks.append({"hour":hour, "minute":minute})
-        active_alarm()
+    # def set_alarm_clock(hour, minute):
+    #     alarm_clocks.append({"hour":hour, "minute":minute})
+    #     alarmH = hour
+    #     alarmM = minute
+    #     print(alarmH, alarmM)
+    #     active_alarm()
 
-    def active_alarm():
-        alarm_clock = "{}:{}:00".format(alarm_clocks[0]["hour"],alarm_clocks[0]["minute"])
-        if alarm_clock == strftime("%H:%M:%S"):
-            alarm.config(text = alarm_clock)
-            pygame.mixer.music.load("osg_S_065.mp3")
-            pygame.mixer.music.play(loops = 2)
-            btn_stop_alarm.place(x = 325, y = 200)
-        btn_set_alarm.after(1000,active_alarm)
+    # def active_alarm():
+    #     alarm_clock = "{}:{}:00".format(alarm_clocks[0]["hour"],alarm_clocks[0]["minute"])
+    #     if alarm_clock == strftime("%H:%M"):
+    #         alarm.config(text = alarm_clock)
+    #         pygame.mixer.music.load("stanley.mp3")
+    #         pygame.mixer.music.play(loops = 2)
+    #         btn_stop_alarm.place(x = 325, y = 200)
+    #     btn_set_alarm.after(1000,active_alarm)
 
     def stop_alarm():
         pygame.mixer.music.stop()
 
     def set_task(activity):
-        print(activity)
-        text_one = tk.Button(root, text = activity)
-        text_one.place(x = 200, y = 200)
+        #splite the activity string into the name and task 
+        name, task = activity.split(":", 1)
+        isMaxChar = False
+        #if the task string is too long, make a newline
+        for index in range(len(task)):
+            if index % CHAR_LEN == 0 and index != 0:
+                isMaxChar = True
+                space = index-1
+                while (task[space] != " "):
+                    space-=1
+                first_line = task[:space]
+                second_line = task[space+1:]
+                break
+         
+        
+        if(isMaxChar==False):
+            text = tk.Label(root, text = name + ":\n" + task, bg = "black", fg = "white", font = ("arial",  25,  'bold'))
+            text.place(relx=0.5, rely=0.2, anchor=tk.CENTER, width = w-20, height = 115)
+        else:
+            text = tk.Label(root, text = name + ":\n" + first_line + '\n' + second_line, bg = "black", fg = "white", font = ("arial",  25,  'bold'))
+            text.place(relx=0.5, rely=0.2, anchor=tk.CENTER, width = w-20, height = 115)
+
+    def set_restart():
+        restart = True
+        return restart
 
     #BACK
     alarm_clocks = []
@@ -52,41 +78,50 @@ def thread2(in_q):
 
     #FRONT
     root.title("Alarmania")
-    root.geometry("500x250")
+    w = root.winfo_screenwidth()
+    h = root.winfo_screenheight()
+    root.geometry(f"{w}x{h}+0+0")
     root.resizable(0,0)
     root.config(bg = "black")
+    root.attributes('-fullscreen', True)
 
     #LABEL
-    clock = tk.Label(root, bg = "black", fg = "white", font = "arial 50 bold")
-    clock.pack()
+    clock = tk.Label(root, font = ('calibri', 60, 'bold'),
+                background = 'orange',
+                foreground = 'white')
+    
+    # Placing clock at the centre
+    # of the tkinter window
+    clock.place(relx=0.5, rely=0.5, anchor=tk.CENTER, width = w, height = 80)
     set_clock()
 
     alarm = tk.Label(root, bg = "black", fg = "green", font = "arial 50 bold")
     alarm.pack()
 
     #ENTRY
-    hour = tk.Entry(root, width = 2, bg = "black", fg = "green", font = "arial 30")
-    hour.place(x = 195, y = 135)
+    #hour = tk.Entry(root, bg = "black", fg = "green", font = "arial 30")
+    #hour.place(x = 195, y = 135, width = 20, height = 20)
 
-    minute = tk.Entry(root, width = 2, bg = "black", fg = "green", font = "arial 30")
-    minute.place(x = 255, y = 135)
+    #minute = tk.Entry(root, width = 2, bg = "black", fg = "green", font = "arial 30")
+    #minute.place(x = 255, y = 135)
 
     #BUTTON
-    btn_set_alarm = tk.Button(root, text = "Set Alarm", command = lambda: set_alarm_clock(hour.get(),minute.get()))
-    btn_set_alarm.place(x = 100, y = 200)
+    #btn_set_alarm = tk.Button(root, text = "Set Alarm", command = lambda: set_alarm_clock(hour.get(),minute.get()))
+    #btn_set_alarm.place(x = 100, y = 200)
 
-    btn_stop_alarm = tk.Button(root, text = "Stop Alarm", command = stop_alarm)
-    
-    minute = tk.Entry(root, width = 2, bg = "black", fg = "green", font = "arial 30")
-    minute.place(x = 255, y = 135)
+    #btn_stop_alarm = tk.Button(root, text = "Stop Alarm", command = stop_alarm)
+
+    #print(hour, alarm)
+    #restart = tk.Button(root, text = "restart", command = lambda: set_restart())
+    #restart.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     def loop():
         if (q.empty() == False):        
             activity = in_q.get()
             set_task(activity)   
-        root.after(5, loop)
+        root.after(10, loop)
 
-    root.after(10, loop)
+    root.after(6, loop)
     root.mainloop()
  
 
@@ -94,7 +129,7 @@ def thread2(in_q):
     
 def web_script(out_q):
 
-    def webscript(boolean):
+    def webscript_one():
 
 
         website = 'https://randomthingstodo.com/'
@@ -165,18 +200,33 @@ def web_script(out_q):
 
         #change path according to directory of chromedriver
         driver = webdriver.Chrome(
-            'chromedriver_win32/chromedriver', options=option)
+            'chromedriver', options=option)
         driver.get(website)
 
         name = driver.find_element(By.CLASS_NAME, "card-text").text
-
-        return activity + name
         
+        text = activity + ": " + " " + name
+        
+        return text
         
 
-        if boolean == True:
+    def webscript_two():
 
-            webscript(False)
+        website = 'https://randomwordgenerator.com/act-of-kindness.php'
+
+        option = webdriver.ChromeOptions()
+        option.add_argument('headless')
+
+        #change path according to directory of chromedriver
+        driver = webdriver.Chrome(
+            'chromedriver', options=option)
+        driver.get(website)
+        driver.find_element_by_xpath('//*[@id="btn_submit_generator"]').click()
+        act = driver.find_element_by_xpath('//*[@id="result"]/li/div/span').text
+        
+        return "Random Act of Kindness: " + act
+
+
 
     #make input nice display
     pygame.mixer.init()
@@ -187,36 +237,35 @@ def web_script(out_q):
     #alarm_time = str(alarmH) + ":" + str(alarmM)
 
     while(True):
+        restart = False
 
         count = 0
         #make nice input
-        restart = False
         #print("waiting")
-
         if(alarmH == (datetime.datetime.now().hour) and
                 alarmM == (datetime.datetime.now().minute)):
 
             mixer.music.load('toby_sad_boy.mp3')
             mixer.music.play()
 
-            endTime = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            endTime = datetime.datetime.now() + datetime.timedelta(minutes=2)
             
-            out_q.put(webscript(False))
+            rand_num = random.randint(1, 2)
+
+            if (rand_num == 1):
+                out_q.put(webscript_one())
             
+            else: 
+                out_q.put(webscript_two())
+
             while True:
+
                 if datetime.datetime.now() >= endTime:
                     break
 
-                if restart == True:
-                    webscript(False)
-
-
+        
 q = Queue()
 t1=Thread(target=web_script, args = (q, ))
 t2=Thread(target=thread2, args = (q,))
 t1.start()
 t2.start()
-
-
-
-    
