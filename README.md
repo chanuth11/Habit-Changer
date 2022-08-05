@@ -7,6 +7,6 @@
  
  link to video: https://photos.app.goo.gl/EXscNLTx7c6mvE8K6
 
-##updated interface
+## Updated interface
 
-![alt text](file:///C:/Users/Ryzen/Downloads/PXL_20220805_191451329.MP.jpg)
+![PXL_20220805_191451329 MP](https://user-images.githubusercontent.com/57009205/183150788-4befd743-20ac-4369-9d0d-98bacb912f38.jpg)
