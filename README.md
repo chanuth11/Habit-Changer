@@ -9,4 +9,4 @@
 
 ## Updated interface
 
-![PXL_20220805_191451329 MP](https://user-images.githubusercontent.com/57009205/183150788-4befd743-20ac-4369-9d0d-98bacb912f38.jpg)
+![PXL_20220805_193558091 MP](https://user-images.githubusercontent.com/57009205/183150984-f1aed44c-324e-4c94-9943-5c13c9f969fc.jpg)
