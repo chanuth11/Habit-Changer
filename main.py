@@ -1,5 +1,4 @@
 import random
-import time
 import datetime
 from selenium import webdriver   # for webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -13,40 +12,26 @@ import pygame
 from threading import *
 from queue import Queue
 
-alarmH = 5
-alarmM = 30
+#setting the alarm
+alarmH = 15
+alarmM = 27
 CHAR_LEN = 46
         
-def thread2(in_q):
+#thread which controls the clock
+def clock(in_q):
     
+    #setting the clock 
     def set_clock():
         clock.config(text = strftime("%H:%M:%S %p"))
         clock.after(1000,set_clock)
 
-
-    # def set_alarm_clock(hour, minute):
-    #     alarm_clocks.append({"hour":hour, "minute":minute})
-    #     alarmH = hour
-    #     alarmM = minute
-    #     print(alarmH, alarmM)
-    #     active_alarm()
-
-    # def active_alarm():
-    #     alarm_clock = "{}:{}:00".format(alarm_clocks[0]["hour"],alarm_clocks[0]["minute"])
-    #     if alarm_clock == strftime("%H:%M"):
-    #         alarm.config(text = alarm_clock)
-    #         pygame.mixer.music.load("stanley.mp3")
-    #         pygame.mixer.music.play(loops = 2)
-    #         btn_stop_alarm.place(x = 325, y = 200)
-    #     btn_set_alarm.after(1000,active_alarm)
-
-    def stop_alarm():
-        pygame.mixer.music.stop()
-
+    #writing the task
     def set_task(activity):
-        #splite the activity string into the name and task 
+
+        #splits the activity string into the name and task 
         name, task = activity.split(":", 1)
         isMaxChar = False
+
         #if the task string is too long, make a newline
         for index in range(len(task)):
             if index % CHAR_LEN == 0 and index != 0:
@@ -58,20 +43,12 @@ def thread2(in_q):
                 second_line = task[space+1:]
                 break
          
-        
         if(isMaxChar==False):
             text = tk.Label(root, text = name + ":\n" + task, bg = "black", fg = "white", font = ("arial",  25,  'bold'))
             text.place(relx=0.5, rely=0.2, anchor=tk.CENTER, width = w-20, height = 115)
         else:
             text = tk.Label(root, text = name + ":\n" + first_line + '\n' + second_line, bg = "black", fg = "white", font = ("arial",  25,  'bold'))
             text.place(relx=0.5, rely=0.2, anchor=tk.CENTER, width = w-20, height = 115)
-
-    def set_restart():
-        restart = True
-        return restart
-
-    #BACK
-    alarm_clocks = []
 
     print(datetime.datetime.now().hour , ":", datetime.datetime.now().minute)
     root = tk.Tk()
@@ -87,34 +64,17 @@ def thread2(in_q):
 
     #LABEL
     clock = tk.Label(root, font = ('calibri', 60, 'bold'),
-                background = 'orange',
+                background = 'black',
                 foreground = 'white')
     
-    # Placing clock at the centre
-    # of the tkinter window
+    # Placing clock at the centre of the tkinter window
     clock.place(relx=0.5, rely=0.5, anchor=tk.CENTER, width = w, height = 80)
     set_clock()
 
     alarm = tk.Label(root, bg = "black", fg = "green", font = "arial 50 bold")
     alarm.pack()
 
-    #ENTRY
-    #hour = tk.Entry(root, bg = "black", fg = "green", font = "arial 30")
-    #hour.place(x = 195, y = 135, width = 20, height = 20)
-
-    #minute = tk.Entry(root, width = 2, bg = "black", fg = "green", font = "arial 30")
-    #minute.place(x = 255, y = 135)
-
-    #BUTTON
-    #btn_set_alarm = tk.Button(root, text = "Set Alarm", command = lambda: set_alarm_clock(hour.get(),minute.get()))
-    #btn_set_alarm.place(x = 100, y = 200)
-
-    #btn_stop_alarm = tk.Button(root, text = "Stop Alarm", command = stop_alarm)
-
-    #print(hour, alarm)
-    #restart = tk.Button(root, text = "restart", command = lambda: set_restart())
-    #restart.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-
+    #get the data form the other thread
     def loop():
         if (q.empty() == False):        
             activity = in_q.get()
@@ -126,27 +86,27 @@ def thread2(in_q):
  
 
 
-    
+#second thread which gets the information from the websites
 def web_script(out_q):
 
+    #first website
     def webscript_one():
 
-
+        #gets information form below website
         website = 'https://randomthingstodo.com/'
         activities = ['talk', 'draw', 'paint', 'home', 'outside',
                     'public', 'challenges', 'write', 'money', 'best', 'funniest']
+        
+        #randomly choose a category from the website
         activity = ""
         rand_num = random.randint(1, 11)
-
-        # make restart a key input instead
-        restart = False
 
         if rand_num == 1:
 
             website = website + activities[0]
             activity = 'Things to Talk About'
 
-        elif rand_num == 2:
+        elif rand_num == 1:
 
             website = website + activities[1]
             activity = 'Drawing Ideas'
@@ -195,9 +155,10 @@ def web_script(out_q):
             website = website + activities[10]
             activity = 'Funniest Things to Do'
 
+        #setup the chrome driver
         option = webdriver.ChromeOptions()
         option.add_argument('headless')
-
+        
         #change path according to directory of chromedriver
         driver = webdriver.Chrome(
             'chromedriver', options=option)
@@ -209,11 +170,11 @@ def web_script(out_q):
         
         return text
         
-
+    #second website
     def webscript_two():
 
+        #gets information form below website
         website = 'https://randomwordgenerator.com/act-of-kindness.php'
-
         option = webdriver.ChromeOptions()
         option.add_argument('headless')
 
@@ -221,34 +182,26 @@ def web_script(out_q):
         driver = webdriver.Chrome(
             'chromedriver', options=option)
         driver.get(website)
-        driver.find_element_by_xpath('//*[@id="btn_submit_generator"]').click()
-        act = driver.find_element_by_xpath('//*[@id="result"]/li/div/span').text
-        
+        driver.find_element(By.XPATH, '//*[@id="btn_submit_generator"]').click()
+        act = driver.find_element(By.XPATH, '//*[@id="result"]/li/div/span').text
+  
         return "Random Act of Kindness: " + act
 
-
-
-    #make input nice display
     pygame.mixer.init()
     mixer.init()
     mixer.music.load('stanley.mp3')
 
-
-    #alarm_time = str(alarmH) + ":" + str(alarmM)
-
+    #keep waiting until the time matches the alarm time
     while(True):
-        restart = False
 
-        count = 0
-        #make nice input
-        #print("waiting")
+        #play the music and put the website data onto the queue which is for the first thread
         if(alarmH == (datetime.datetime.now().hour) and
                 alarmM == (datetime.datetime.now().minute)):
 
             mixer.music.load('toby_sad_boy.mp3')
             mixer.music.play()
 
-            endTime = datetime.datetime.now() + datetime.timedelta(minutes=2)
+            endTime = datetime.datetime.now() + datetime.timedelta(minutes=20)
             
             rand_num = random.randint(1, 2)
 
@@ -263,9 +216,9 @@ def web_script(out_q):
                 if datetime.datetime.now() >= endTime:
                     break
 
-        
+#initialize the threads and queue to share the website information
 q = Queue()
 t1=Thread(target=web_script, args = (q, ))
-t2=Thread(target=thread2, args = (q,))
+t2=Thread(target=clock, args = (q,))
 t1.start()
 t2.start()
